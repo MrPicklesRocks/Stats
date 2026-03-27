@@ -21,7 +21,7 @@ import GPU
 import Bluetooth
 import Clock
 
-let updater = Updater(github: "MrPicklesRocks/Stats", url: "https://api.github.com/repos/MrPicklesRocks/Stats/releases/latest")
+let updater = Updater(github: "MrPicklesRocks/MacStats", url: "https://api.github.com/repos/MrPicklesRocks/MacStats/releases/latest")
 var modules: [Module] = [
     CPU(),
     GPU(),
@@ -37,11 +37,7 @@ var modules: [Module] = [
 @main
 class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDelegate {
     internal let settingsWindow: SettingsWindow = SettingsWindow()
-    internal let updateWindow: UpdateWindow = UpdateWindow()
     internal let setupWindow: SetupWindow = SetupWindow()
-    internal let supportWindow: SupportWindow = SupportWindow()
-    internal let updateActivity = NSBackgroundActivityScheduler(identifier: "com.textd.Stats.updateCheck")
-    internal let supportActivity = NSBackgroundActivityScheduler(identifier: "com.textd.Stats.support")
     internal var clickInNotification: Bool = false
     internal var menuBarItem: NSStatusItem? = nil
     internal var combinedView: CombinedView = CombinedView()
@@ -82,7 +78,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
             return event
         }
         
-        info("Stats started in \((startingPoint.timeIntervalSinceNow * -1).rounded(toPlaces: 4)) seconds")
+        info("MacStats started in \((startingPoint.timeIntervalSinceNow * -1).rounded(toPlaces: 4)) seconds")
         self.startTS = Date()
     }
     
@@ -115,20 +111,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
                                 didReceive response: UNNotificationResponse,
                                 withCompletionHandler completionHandler: @escaping () -> Void) {
         self.clickInNotification = true
-        
-        if let uri = response.notification.request.content.userInfo["url"] as? String {
-            debug("Downloading new version of app...")
-            if let url = URL(string: uri) {
-                updater.download(url, completion: { path in
-                    updater.install(path: path) { error in
-                        if let error {
-                            showAlert("Error update Stats", error, .critical)
-                        }
-                    }
-                })
-            }
-        }
-        
         completionHandler()
     }
     

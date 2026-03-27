@@ -1,16 +1,16 @@
-# Stats
+# MacStats
 
-<a href="https://github.com/MrPicklesRocks/Stats/releases"><p align="center"><img src="https://github.com/MrPicklesRocks/Stats/raw/master/Stats/Supporting%20Files/Assets.xcassets/AppIcon.appiconset/icon_256x256.png" width="120"></p></a>
+<a href="https://github.com/MrPicklesRocks/MacStats/releases"><p align="center"><img src="https://github.com/MrPicklesRocks/MacStats/raw/master/Stats/Supporting%20Files/Assets.xcassets/AppIcon.appiconset/icon_256x256.png" width="120"></p></a>
 
-[![Stats](https://serhiy.s3.eu-central-1.amazonaws.com/Github_repo/stats/menus%3Fv2.3.2.png?v1)](https://github.com/MrPicklesRocks/Stats/releases)
-[![Stats](https://serhiy.s3.eu-central-1.amazonaws.com/Github_repo/stats/popups%3Fv2.3.2.png?v3)](https://github.com/MrPicklesRocks/Stats/releases)
+[![MacStats](https://serhiy.s3.eu-central-1.amazonaws.com/Github_repo/stats/menus%3Fv2.3.2.png?v1)](https://github.com/MrPicklesRocks/MacStats/releases)
+[![MacStats](https://serhiy.s3.eu-central-1.amazonaws.com/Github_repo/stats/popups%3Fv2.3.2.png?v3)](https://github.com/MrPicklesRocks/MacStats/releases)
 
 macOS system monitor in your menu bar
 
 ## Installation
 ### Manual
-You can download the latest version [here](https://github.com/MrPicklesRocks/Stats/releases/latest/download/Stats.dmg).
-This will download a file called `Stats.dmg`. Open it and move the app to the application folder.
+You can download the latest version [here](https://github.com/MrPicklesRocks/MacStats/releases/latest/download/MacStats.dmg).
+This will download a file called `MacStats.dmg`. Open it and move the app to the application folder.
 
 ### Homebrew
 To install it using Homebrew, open the Terminal app and type:
@@ -22,7 +22,7 @@ brew install stats
 Legacy version for older systems could be found [here](https://mac-stats.com/downloads).
 
 ## Requirements
-Stats is supported on the released macOS version starting from macOS 11.15 (Big Sur).
+MacStats is supported on the released macOS version starting from macOS 11.15 (Big Sur).
 
 ## Fork changes
 This fork carries a small set of operational fixes needed to make the app reliable in the current Text'd environment and releasable from a separate GitHub repository.
@@ -34,7 +34,7 @@ This fork carries a small set of operational fixes needed to make the app reliab
 - Update-check and issue/release links were repointed from the old upstream repository to this fork so shipped builds resolve against the correct release source.
 
 ## Features
-Stats is an application that allows you to monitor your macOS system.
+MacStats is an application that allows you to monitor your macOS system.
 
  - CPU utilization
  - GPU utilization
@@ -50,7 +50,7 @@ Stats is an application that allows you to monitor your macOS system.
 ## FAQs
 
 ### How do you change the order of the menu bar icons?
-macOS decides the order of the menu bar items not `Stats` - it may change after the first reboot after installing Stats.
+macOS decides the order of the menu bar items not `MacStats` - it may change after the first reboot after installing MacStats.
 
 To change the order of any menu bar icon - macOS Mojave (version 10.14) and up.
 
@@ -58,8 +58,8 @@ To change the order of any menu bar icon - macOS Mojave (version 10.14) and up.
 2. Drag the icon to the desired position on the menu bar.
 3. Release ⌘ (command key)
 
-### How to reduce energy impact or CPU usage of Stats?
-Stats tries to be efficient as it's possible. But reading some data periodically is not a cheap task. Each module has its own "price". So, if you want to reduce energy impact from the Stats you need to disable some Stats modules. The most inefficient modules are Sensors and Bluetooth. Disabling these modules could reduce CPU usage and power efficiency by up to 50% in some cases.
+### How to reduce energy impact or CPU usage of MacStats?
+MacStats tries to be efficient as it's possible. But reading some data periodically is not a cheap task. Each module has its own "price". So, if you want to reduce energy impact from MacStats you need to disable some modules. The most inefficient modules are Sensors and Bluetooth. Disabling these modules could reduce CPU usage and power efficiency by up to 50% in some cases.
 
 ### Fan control
 Fan control is in legacy mode. It does not receive any updates or fixes. It's not dropped from the app just because in the old Macs it works pretty acceptable. I'm open to accepting fixed or improvements (via PR) for this feature in case someone would like to help with that. But have no option and time to provide support for this feature.
@@ -70,14 +70,14 @@ For example, a CPU is typically divided into two clusters: efficiency and perfor
 Additionally, with each new SoC, Apple changes the sensor keys. As a result, it takes time to determine which SMC values correspond to the appropriate sensors. If anyone knows how to accurately match the sensors for Apple Silicon, please contact me.
 
 ### App crash – what to do?
-First, ensure that you are using the latest version of Stats. There is a high chance that a fix preventing the crash has already been released. If you are already running the latest version, check the open issues. Only if none of the existing issues address your problem should you open a new issue.
+First, ensure that you are using the latest version of MacStats. There is a high chance that a fix preventing the crash has already been released. If you are already running the latest version, check the open issues. Only if none of the existing issues address your problem should you open a new issue.
 
 ### Why my issue was closed without any response?
 Most probably because it's a duplicated issue and there is an answer to the question, report, or proposition. Please use a search by closed issues to get an answer.
 So, if your issue was closed without any response, most probably it already has a response.
 
 ### External API
-Stats uses some external APIs, such as:
+MacStats uses some external APIs, such as:
 
 - https://api.github.com – For update checks
 - https://api.mac-stats.com – For retrieving the public IP address

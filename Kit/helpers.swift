@@ -869,8 +869,8 @@ public class SettingsContainerView: NSStackView {
 
 public class SMCHelper {
     public static let shared = SMCHelper()
-    private let helperToolPath = "/Library/PrivilegedHelperTools/com.textd.Stats.SMC.Helper"
-    private let launchdPlistPath = "/Library/LaunchDaemons/com.textd.Stats.SMC.Helper.plist"
+    private let helperToolPath = "/Library/PrivilegedHelperTools/com.textd.MacStats.SMC.Helper"
+    private let launchdPlistPath = "/Library/LaunchDaemons/com.textd.MacStats.SMC.Helper.plist"
     
     public var isInstalled: Bool {
         FileManager.default.fileExists(atPath: self.helperToolPath) &&
@@ -907,7 +907,7 @@ public class SMCHelper {
     }
     
     public func checkForUpdate() {
-        let helperURL = Bundle.main.bundleURL.appendingPathComponent("Contents/Library/LaunchServices/com.textd.Stats.SMC.Helper")
+        let helperURL = Bundle.main.bundleURL.appendingPathComponent("Contents/Library/LaunchServices/com.textd.MacStats.SMC.Helper")
         guard let helperBundleInfo = CFBundleCopyInfoDictionaryForURL(helperURL as CFURL) as? [String: Any],
               let helperVersion = helperBundleInfo["CFBundleShortVersionString"] as? String,
               let helper = self.helper(nil) else { return }
@@ -960,7 +960,7 @@ public class SMCHelper {
         }
         
         var error: Unmanaged<CFError>?
-        if SMJobBless(kSMDomainUserLaunchd, "com.textd.Stats.SMC.Helper" as CFString, authRef, &error) == false {
+        if SMJobBless(kSMDomainUserLaunchd, "com.textd.MacStats.SMC.Helper" as CFString, authRef, &error) == false {
             let blessError = error!.takeRetainedValue() as Error
             print("Error while installing the Helper: \(blessError.localizedDescription)")
             completion(false)
@@ -992,7 +992,7 @@ public class SMCHelper {
             return self.connection
         }
         
-        let connection = NSXPCConnection(machServiceName: "com.textd.Stats.SMC.Helper", options: .privileged)
+        let connection = NSXPCConnection(machServiceName: "com.textd.MacStats.SMC.Helper", options: .privileged)
         connection.exportedObject = self
         connection.remoteObjectInterface = NSXPCInterface(with: HelperProtocol.self)
         connection.invalidationHandler = {

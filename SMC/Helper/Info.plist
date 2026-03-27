@@ -3,18 +3,18 @@
 <plist version="1.0">
 <dict>
 	<key>CFBundleIdentifier</key>
-	<string>com.textd.Stats.SMC.Helper</string>
+	<string>com.textd.MacStats.SMC.Helper</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>com.textd.Stats.SMC.Helper</string>
+	<string>com.textd.MacStats.SMC.Helper</string>
 	<key>CFBundleShortVersionString</key>
 	<string>1.1.0</string>
 	<key>CFBundleVersion</key>
 	<string>3</string>
 	<key>SMAuthorizedClients</key>
 	<array>
-		<string>identifier "com.textd.Stats" and anchor apple generic and certificate leaf[subject.CN] = "Apple Development: Matthew Heller (5ZKK2896R7)" and certificate 1[field.1.2.840.113635.100.6.2.1] /* exists */</string>
+		<string>identifier "com.textd.MacStats" and anchor apple generic and certificate leaf[subject.CN] = "Apple Development: Matthew Heller (5ZKK2896R7)" and certificate 1[field.1.2.840.113635.100.6.2.1] /* exists */</string>
 	</array>
 </dict>
 </plist>

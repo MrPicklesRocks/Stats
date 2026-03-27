@@ -13,10 +13,6 @@ import Cocoa
 import Kit
 
 class ApplicationSettings: NSStackView {
-    private var updateIntervalValue: String {
-        Store.shared.string(key: "update-interval", defaultValue: AppUpdateInterval.silent.rawValue)
-    }
-    
     private var temperatureUnitsValue: String {
         get { Store.shared.string(key: "temperature_units", defaultValue: "system") }
         set { Store.shared.set(key: "temperature_units", value: newValue) }
@@ -41,24 +37,20 @@ class ApplicationSettings: NSStackView {
     
     private var systemWidgetsUpdatesState: Bool {
         get {
-            let userDefaults = UserDefaults(suiteName: "\(Bundle.main.object(forInfoDictionaryKey: "TeamId") as! String).com.textd.Stats.widgets")
+            let userDefaults = UserDefaults(suiteName: "\(Bundle.main.object(forInfoDictionaryKey: "TeamId") as! String).com.textd.MacStats.widgets")
             return userDefaults?.bool(forKey: "systemWidgetsUpdates_state") ?? false
         }
         set {
-            let userDefaults = UserDefaults(suiteName: "\(Bundle.main.object(forInfoDictionaryKey: "TeamId") as! String).com.textd.Stats.widgets")
+            let userDefaults = UserDefaults(suiteName: "\(Bundle.main.object(forInfoDictionaryKey: "TeamId") as! String).com.textd.MacStats.widgets")
             userDefaults?.set(newValue, forKey: "systemWidgetsUpdates_state")
         }
     }
     
-    private var updateSelector: NSPopUpButton?
     private var startAtLoginBtn: NSSwitch?
-    private var remoteControlBtn: NSSwitch?
     
     private var combinedModulesView: PreferencesSection?
     private var fanHelperView: PreferencesSection?
-    private var remoteView: PreferencesSection?
     
-    private let updateWindow: UpdateWindow = UpdateWindow()
     private let moduleSelector: ModuleSelectorView = ModuleSelectorView()
     
     private var CPUeButton: NSButton?
@@ -83,19 +75,12 @@ class ApplicationSettings: NSStackView {
         scrollView.stackView.spacing = Constants.Settings.margin
         
         scrollView.stackView.addArrangedSubview(self.informationView())
-        
-        self.updateSelector = selectView(
-            action: #selector(self.toggleUpdateInterval),
-            items: AppUpdateIntervals,
-            selected: self.updateIntervalValue
-        )
         self.startAtLoginBtn = switchView(
             action: #selector(self.toggleLaunchAtLogin),
             state: LaunchAtLogin.isEnabled
         )
         
         scrollView.stackView.addArrangedSubview(PreferencesSection([
-            PreferencesRow(localizedString("Check for updates"), component: self.updateSelector!),
             PreferencesRow(localizedString("Temperature"), component: selectView(
                 action: #selector(self.toggleTemperatureUnits),
                 items: TemperatureUnits,
@@ -141,26 +126,6 @@ class ApplicationSettings: NSStackView {
         self.combinedModulesView?.setRowVisibility(3, newState: self.combinedModulesState)
         self.combinedModulesView?.setRowVisibility(4, newState: self.combinedModulesState)
         
-        self.remoteControlBtn = switchView(
-            action: #selector(self.toggleRemoteControlState),
-            state: Remote.shared.control
-        )
-        self.remoteView = PreferencesSection(label: localizedString("Remote (beta)"), [
-            PreferencesRow(localizedString("Authorization"), component: buttonView(#selector(self.loginToRemote), text: localizedString("Login"))),
-            PreferencesRow(localizedString("Identificator"), component: textView(Remote.shared.id.uuidString)),
-            PreferencesRow(localizedString("Monitoring"), component: switchView(
-                action: #selector(self.toggleRemoteMonitoringState),
-                state: Remote.shared.monitoring
-            )),
-            PreferencesRow(localizedString("Control"), component: self.remoteControlBtn!),
-            PreferencesRow(component: buttonView(#selector(self.logoutFromRemote), text: localizedString("Logout")))
-        ])
-        scrollView.stackView.addArrangedSubview(self.remoteView!)
-        self.remoteView?.setRowVisibility(1, newState: false)
-        self.remoteView?.setRowVisibility(2, newState: false)
-        self.remoteView?.setRowVisibility(3, newState: false)
-        self.remoteView?.setRowVisibility(4, newState: false)
-        
         scrollView.stackView.addArrangedSubview(PreferencesSection(label: localizedString("Settings"), [
             PreferencesRow(
                 localizedString("Export settings"),
@@ -204,7 +169,6 @@ class ApplicationSettings: NSStackView {
         scrollView.stackView.addArrangedSubview(PreferencesSection(label: localizedString("Stress tests"), tests))
         
         NotificationCenter.default.addObserver(self, selector: #selector(self.toggleUninstallHelperButton), name: .fanHelperState, object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(self.handleRemoteState), name: .remoteState, object: nil)
     }
     
     required init?(coder: NSCoder) {
@@ -217,17 +181,6 @@ class ApplicationSettings: NSStackView {
     
     internal func viewWillAppear() {
         self.startAtLoginBtn?.state = LaunchAtLogin.isEnabled ? .on : .off
-        self.remoteControlBtn?.state = Remote.shared.control ? .on : .off
-        
-        var idx = self.updateSelector?.indexOfSelectedItem ?? 0
-        if let items = self.updateSelector?.menu?.items {
-            for (i, item) in items.enumerated() {
-                if let obj = item.representedObject as? String, obj == self.updateIntervalValue {
-                    idx = i
-                }
-            }
-        }
-        self.updateSelector?.selectItem(at: idx)
     }
     
     private func informationView() -> NSView {
@@ -249,7 +202,7 @@ class ApplicationSettings: NSStackView {
         let statsName: NSTextField = TextView(frame: NSRect(x: 0, y: 0, width: view.frame.width, height: 22))
         statsName.alignment = .center
         statsName.font = NSFont.systemFont(ofSize: 20, weight: .regular)
-        statsName.stringValue = "Stats"
+        statsName.stringValue = "MacStats"
         statsName.isSelectable = true
         
         let versionNumber = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as! String
@@ -262,20 +215,12 @@ class ApplicationSettings: NSStackView {
         statsVersion.isSelectable = true
         statsVersion.toolTip = "\(localizedString("Build number")) \(buildNumber)"
         
-        let updateButton: NSButton = NSButton()
-        updateButton.title = localizedString("Check for update")
-        updateButton.bezelStyle = .rounded
-        updateButton.target = self
-        updateButton.action = #selector(self.updateAction)
-        
         container.addRow(with: [iconView])
         container.addRow(with: [statsName])
         container.addRow(with: [statsVersion])
-        container.addRow(with: [updateButton])
         
         container.row(at: 1).height = 22
         container.row(at: 2).height = 20
-        container.row(at: 3).height = 30
         
         view.addArrangedSubview(container)
         
@@ -283,30 +228,6 @@ class ApplicationSettings: NSStackView {
     }
     
     // MARK: - actions
-    
-    @objc private func updateAction() {
-        updater.check(force: true, completion: { result, error in
-            if error != nil {
-                debug("error updater.check(): \(error!.localizedDescription)")
-                return
-            }
-            
-            guard error == nil, let version: version_s = result else {
-                debug("download error(): \(error!.localizedDescription)")
-                return
-            }
-            
-            DispatchQueue.main.async(execute: {
-                self.updateWindow.open(version, settingButton: true)
-                return
-            })
-        })
-    }
-    
-    @objc private func toggleUpdateInterval(_ sender: NSMenuItem) {
-        guard let key = sender.representedObject as? String else { return }
-        Store.shared.set(key: "update-interval", value: key)
-    }
     
     @objc private func toggleTemperatureUnits(_ sender: NSMenuItem) {
         guard let key = sender.representedObject as? String else { return }
@@ -368,7 +289,7 @@ class ApplicationSettings: NSStackView {
     
     @objc private func exportSettings() {
         let panel = NSSavePanel()
-        panel.nameFieldStringValue = "Stats.plist"
+        panel.nameFieldStringValue = "MacStats.plist"
         panel.showsTagField = false
         panel.level = NSWindow.Level(rawValue: Int(CGWindowLevelForKey(.modalPanelWindow)))
         panel.begin { (result) in
@@ -433,59 +354,6 @@ class ApplicationSettings: NSStackView {
         } else {
             test.start()
             self.GPUButton?.title = localizedString("Stop")
-        }
-    }
-    
-    @objc private func toggleRemoteMonitoringState(_ sender: NSButton) {
-        Remote.shared.monitoring = sender.state == NSControl.StateValue.on
-    }
-    @objc private func toggleRemoteControlState(_ sender: NSButton) {
-        if sender.state == .on {
-            let alert = NSAlert()
-            alert.messageText = localizedString("Warning")
-            alert.informativeText = localizedString("It is not recommended to enable remote control unless you know what you are doing.")
-            alert.alertStyle = .warning
-            alert.addButton(withTitle: localizedString("Enable"))
-            alert.addButton(withTitle: localizedString("Cancel"))
-            let response = alert.runModal()
-            if response == .alertFirstButtonReturn {
-                Remote.shared.control = true
-            } else {
-                sender.state = .off
-            }
-        } else {
-            Remote.shared.control = false
-        }
-    }
-    
-    @objc private func handleRemoteState(_ notification: Notification) {
-        guard let auth = notification.userInfo?["auth"] as? Bool else { return }
-        self.setRemoteSettings(auth)
-    }
-    
-    @objc private func loginToRemote() {
-        Remote.shared.login()
-    }
-    
-    @objc private func logoutFromRemote() {
-        Remote.shared.logout()
-    }
-    
-    private func setRemoteSettings(_ auth: Bool) {
-        DispatchQueue.main.async {
-            if auth {
-                self.remoteView?.setRowVisibility(1, newState: true)
-                self.remoteView?.setRowVisibility(2, newState: true)
-                self.remoteView?.setRowVisibility(3, newState: true)
-                self.remoteView?.setRowVisibility(4, newState: true)
-                self.remoteView?.setRowVisibility(0, newState: false)
-            } else {
-                self.remoteView?.setRowVisibility(0, newState: true)
-                self.remoteView?.setRowVisibility(1, newState: false)
-                self.remoteView?.setRowVisibility(2, newState: false)
-                self.remoteView?.setRowVisibility(3, newState: false)
-                self.remoteView?.setRowVisibility(4, newState: false)
-            }
         }
     }
     

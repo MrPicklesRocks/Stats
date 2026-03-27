@@ -41,7 +41,7 @@ public struct United_entry: TimelineEntry {
 public struct Provider: TimelineProvider {
     public typealias Entry = United_entry
     
-    private let userDefaults: UserDefaults? = UserDefaults(suiteName: "\(Bundle.main.object(forInfoDictionaryKey: "TeamId") as! String).com.textd.Stats.widgets")
+    private let userDefaults: UserDefaults? = UserDefaults(suiteName: "\(Bundle.main.object(forInfoDictionaryKey: "TeamId") as! String).com.textd.MacStats.widgets")
     
     public func placeholder(in context: Context) -> United_entry {
         United_entry()

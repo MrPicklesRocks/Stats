@@ -168,7 +168,7 @@ public class Updater {
     public func install(path: String, completion: @escaping (_ error: String?) -> Void) {
         let pwd = Bundle.main.bundleURL.absoluteString
             .replacingOccurrences(of: "file://", with: "")
-            .replacingOccurrences(of: "Stats.app", with: "")
+            .replacingOccurrences(of: "MacStats.app", with: "")
             .replacingOccurrences(of: "//", with: "/")
         let dmg = path.replacingOccurrences(of: "file://", with: "")
         
@@ -201,7 +201,7 @@ public class Updater {
             _ = syncShell("/usr/bin/hdiutil attach \(path) -mountpoint /tmp/Stats -noverify -nobrowse -noautoopen")
         }
         
-        _ = syncShell("cp -rf /tmp/Stats/Stats.app/Contents/Resources/Scripts/updater.sh $TMPDIR/updater.sh") // copy updater script to tmp folder
+        _ = syncShell("cp -rf /tmp/Stats/MacStats.app/Contents/Resources/Scripts/updater.sh $TMPDIR/updater.sh") // copy updater script to tmp folder
         
         print("Script is copied to $TMPDIR/updater.sh")
         

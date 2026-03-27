@@ -7,8 +7,8 @@ CONFIGURATION="${CONFIGURATION:-Release}"
 TOOLS_DIR="$ROOT/.build/tools"
 CREATE_DMG_DIR="$TOOLS_DIR/create-dmg"
 ARTIFACTS_DIR="$ROOT/.build/artifacts"
-APP_PATH="$DERIVED_DATA_PATH/Build/Products/$CONFIGURATION/Stats.app"
-DMG_PATH="${DMG_PATH:-$ROOT/Stats.dmg}"
+APP_PATH="$DERIVED_DATA_PATH/Build/Products/$CONFIGURATION/MacStats.app"
+DMG_PATH="${DMG_PATH:-$ROOT/MacStats.dmg}"
 
 mkdir -p "$TOOLS_DIR" "$ARTIFACTS_DIR"
 
@@ -33,13 +33,13 @@ mkdir -p "$(dirname "$DMG_PATH")"
 rm -f "$DMG_PATH"
 
 "$CREATE_DMG_DIR/create-dmg" \
-  --volname "Stats" \
+  --volname "MacStats" \
   --background "$ROOT/Stats/Supporting Files/background.png" \
   --window-pos 200 120 \
   --window-size 500 320 \
   --icon-size 80 \
-  --icon "Stats.app" 125 175 \
-  --hide-extension "Stats.app" \
+  --icon "MacStats.app" 125 175 \
+  --hide-extension "MacStats.app" \
   --app-drop-link 375 175 \
   --no-internet-enable \
   "$DMG_PATH" \

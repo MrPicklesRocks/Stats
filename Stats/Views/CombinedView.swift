@@ -75,7 +75,7 @@ internal class CombinedView: NSObject, NSGestureRecognizerDelegate {
         })
         self.menuBarItem?.button?.addSubview(self.view)
         self.menuBarItem?.button?.image = NSImage()
-        self.menuBarItem?.button?.toolTip = localizedString("Stats")
+        self.menuBarItem?.button?.toolTip = "MacStats"
         
         if !self.combinedModulesPopup {
             self.activeModules.forEach { (m: Module) in
@@ -287,11 +287,15 @@ private class Popup: NSStackView, Popup_p {
             }
         }
         
-        let h = CGFloat(availableModules.count) * Constants.Popup.portalHeight + (CGFloat(availableModules.count-1)*Constants.Popup.spacing)
-        if h > 0 {
-            self.setFrameSize(NSSize(width: self.frame.width, height: h))
-            self.sizeCallback?(self.frame.size)
-        }
+        self.layoutSubtreeIfNeeded()
+        
+        let estimatedHeight = CGFloat(availableModules.count) * Constants.Popup.portalHeight + (CGFloat(max(availableModules.count - 1, 0)) * Constants.Popup.spacing)
+        let fittedSize = self.fittingSize
+        let targetWidth = max(self.frame.width, fittedSize.width)
+        let targetHeight = max(estimatedHeight, fittedSize.height)
+        
+        self.setFrameSize(NSSize(width: targetWidth, height: targetHeight))
+        self.sizeCallback?(self.frame.size)
     }
     
     fileprivate func disappear() {

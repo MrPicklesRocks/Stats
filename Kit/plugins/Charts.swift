@@ -123,7 +123,7 @@ public class LineChartView: NSView {
     public var id: String = UUID().uuidString
     
     private let dateFormatter = DateFormatter()
-    private var queue: DispatchQueue = DispatchQueue(label: "com.textd.Stats.charts.line", attributes: .concurrent)
+    private var queue: DispatchQueue = DispatchQueue(label: "com.textd.MacStats.charts.line", attributes: .concurrent)
     
     public var points: [DoubleValue?]
     public var shadowPoints: [DoubleValue?] = []
@@ -538,7 +538,7 @@ public class PieChartView: NSView {
     
     private var value: Double? = nil
     private var segments: [circle_segment] = []
-    private var queue: DispatchQueue = DispatchQueue(label: "com.textd.Stats.charts.pie")
+    private var queue: DispatchQueue = DispatchQueue(label: "com.textd.MacStats.charts.pie")
     
     public init(frame: NSRect = .zero, segments: [circle_segment] = [], filled: Bool = false, drawValue: Bool = false) {
         self.filled = filled
@@ -652,7 +652,7 @@ public class HalfCircleGraphView: NSView {
     
     private var value: Double = 0.0
     private var text: String? = nil
-    private var queue: DispatchQueue = DispatchQueue(label: "com.textd.Stats.charts.halfcircle")
+    private var queue: DispatchQueue = DispatchQueue(label: "com.textd.MacStats.charts.halfcircle")
     
     public var color: NSColor = NSColor.systemBlue
     
@@ -750,7 +750,7 @@ public class HalfCircleGraphView: NSView {
 internal class TachometerGraphView: NSView {
     private var filled: Bool
     private var segments: [circle_segment]
-    private var queue: DispatchQueue = DispatchQueue(label: "com.textd.Stats.charts.tachometer")
+    private var queue: DispatchQueue = DispatchQueue(label: "com.textd.MacStats.charts.tachometer")
     
     internal init(frame: NSRect, segments: [circle_segment], filled: Bool = true) {
         self.filled = filled
@@ -822,7 +822,7 @@ internal class TachometerGraphView: NSView {
 public class ColumnChartView: NSView {
     private var values: [ColorValue] = []
     private var cursor: CGPoint? = nil
-    private var queue: DispatchQueue = DispatchQueue(label: "com.textd.Stats.charts.column")
+    private var queue: DispatchQueue = DispatchQueue(label: "com.textd.MacStats.charts.column")
     
     public init(frame: NSRect = NSRect.zero, num: Int) {
         super.init(frame: frame)
@@ -963,7 +963,7 @@ public class GridChartView: NSView {
     
     private var values: [NSColor] = []
     private let grid: (rows: Int, columns: Int)
-    private var queue: DispatchQueue = DispatchQueue(label: "com.textd.Stats.charts.grid")
+    private var queue: DispatchQueue = DispatchQueue(label: "com.textd.MacStats.charts.grid")
     
     public init(frame: NSRect, grid: (rows: Int, columns: Int)) {
         self.grid = grid
@@ -1021,7 +1021,7 @@ public class GridChartView: NSView {
 public class BarChartView: NSView {
     private var values: [ColorValue] = []
     private var cursor: CGPoint? = nil
-    private var queue: DispatchQueue = DispatchQueue(label: "com.textd.Stats.charts.bar")
+    private var queue: DispatchQueue = DispatchQueue(label: "com.textd.MacStats.charts.bar")
     
     private var size: CGFloat?
     private var horizontal: Bool

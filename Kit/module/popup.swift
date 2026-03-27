@@ -201,7 +201,7 @@ internal class PopupView: NSView {
         self.body.borderType = .noBorder
         self.body.hasVerticalScroller = true
         self.body.hasHorizontalScroller = false
-        self.body.autohidesScrollers = true
+        self.body.autohidesScrollers = false
         self.body.horizontalScrollElasticity = .none
         
         self.addSubview(self.foreground, positioned: .below, relativeTo: .none)
@@ -271,9 +271,7 @@ internal class PopupView: NSView {
             }
         }
         
-        if let documentView = self.body.documentView {
-            documentView.scroll(NSPoint(x: 0, y: documentView.bounds.size.height))
-        }
+        self.scrollToTop()
         
         self.view?.appear()
     }
@@ -319,6 +317,15 @@ internal class PopupView: NSView {
                 y: self.body.documentVisibleRect.origin.y - (diff < 0 ? diff : 0)
             ))
         }
+        self.scrollToTop()
+    }
+    
+    private func scrollToTop() {
+        guard let documentView = self.body.documentView else { return }
+        
+        let maxYOffset = max(0, documentView.bounds.height - self.body.contentSize.height)
+        documentView.scroll(NSPoint(x: 0, y: maxYOffset))
+        self.body.reflectScrolledClipView(self.body.contentView)
     }
 }
 

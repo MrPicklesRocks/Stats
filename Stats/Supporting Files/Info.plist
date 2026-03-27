@@ -19,7 +19,7 @@
 	<key>CFBundleShortVersionString</key>
 	<string>$(MARKETING_VERSION)</string>
 	<key>CFBundleVersion</key>
-	<string>778</string>
+	<string>800</string>
 	<key>Description</key>
 	<string>Simple macOS system monitor in your menu bar</string>
 	<key>LSApplicationCategoryType</key>
@@ -43,8 +43,8 @@
 	<string>alert</string>
 	<key>SMPrivilegedExecutables</key>
 	<dict>
-		<key>com.textd.Stats.SMC.Helper</key>
-		<string>identifier "com.textd.Stats.SMC.Helper" and anchor apple generic and certificate leaf[subject.CN] = "Apple Development: Matthew Heller (5ZKK2896R7)" and certificate 1[field.1.2.840.113635.100.6.2.1] /* exists */</string>
+		<key>com.textd.MacStats.SMC.Helper</key>
+		<string>identifier "com.textd.MacStats.SMC.Helper" and anchor apple generic and certificate leaf[subject.CN] = "Apple Development: Matthew Heller (5ZKK2896R7)" and certificate 1[field.1.2.840.113635.100.6.2.1] /* exists */</string>
 	</dict>
 	<key>TeamId</key>
 	<string>VP7482W8W6</string>

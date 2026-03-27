@@ -6,7 +6,7 @@
 	<true/>
 	<key>com.apple.security.application-groups</key>
 	<array>
-		<string>com.textd.Stats.widgets</string>
+		<string>com.textd.MacStats.widgets</string>
 	</array>
 </dict>
 </plist>
