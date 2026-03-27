@@ -95,16 +95,7 @@ internal class UsageReader: Reader<Battery_Usage> {
                 self.usage.voltage = self.getVoltage() ?? 0
                 self.usage.temperature = self.getTemperature() ?? 0
                 
-                var ACwatts: Int = 0
-                if let ACDetails = IOPSCopyExternalPowerAdapterDetails() {
-                    if let ACList = ACDetails.takeRetainedValue() as? [String: Any] {
-                        guard let watts = ACList[kIOPSPowerAdapterWattsKey] else {
-                            return
-                        }
-                        ACwatts = Int(watts as! Int)
-                    }
-                }
-                self.usage.ACwatts = ACwatts
+                self.usage.ACwatts = self.getAdapterWatts() ?? 0
                 
                 if let chargerData = self.getChargerData() {
                     self.usage.chargingCurrent = chargerData["ChargingCurrent"] as? Int ?? 0
@@ -155,6 +146,24 @@ internal class UsageReader: Reader<Battery_Usage> {
         if let chargerData = IORegistryEntryCreateCFProperty(service, "ChargerData" as CFString, kCFAllocatorDefault, 0) {
             return chargerData.takeRetainedValue() as? [String: Any]
         }
+        return nil
+    }
+    
+    private func getAdapterWatts() -> Int? {
+        guard let details = IOPSCopyExternalPowerAdapterDetails() else {
+            return nil
+        }
+        guard let list = details.takeRetainedValue() as? [String: Any] else {
+            return nil
+        }
+        if let watts = list[kIOPSPowerAdapterWattsKey] as? Int {
+            return watts
+        }
+        if let watts = list[kIOPSPowerAdapterWattsKey] as? NSNumber {
+            return watts.intValue
+        }
+        
+        debug("External power adapter details are missing wattage", log: self.log)
         return nil
     }
 }

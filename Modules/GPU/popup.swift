@@ -75,6 +75,8 @@ private class GPUView: NSStackView {
     private let chartSize: CGFloat = 60
     
     private var stateView: NSView? = nil
+    private var statsView: NSView? = nil
+    private var statsContainer: NSStackView? = nil
     private var circleRow: NSStackView? = nil
     private var chartRow: NSStackView? = nil
     
@@ -164,6 +166,8 @@ private class GPUView: NSStackView {
         let container: NSStackView = NSStackView(frame: NSRect(x: 0, y: 0, width: self.frame.width, height: 0))
         container.orientation = .vertical
         container.spacing = 0
+        self.statsView = view
+        self.statsContainer = container
         
         let circles: NSStackView = NSStackView(frame: NSRect(x: 0, y: 0, width: self.frame.width, height: 0))
         circles.orientation = .horizontal
@@ -186,11 +190,7 @@ private class GPUView: NSStackView {
         
         view.addSubview(container)
         
-        let h = container.arrangedSubviews.map({ $0.bounds.height }).reduce(0, +)
-        view.setFrameSize(NSSize(width: self.frame.width, height: h))
-        container.setFrameSize(NSSize(width: self.frame.width, height: view.bounds.height))
-        view.heightAnchor.constraint(equalToConstant: view.bounds.height).isActive = true
-        container.heightAnchor.constraint(equalToConstant: view.bounds.height).isActive = true
+        self.recalculateStatsHeight()
         
         return view
     }
@@ -273,6 +273,26 @@ private class GPUView: NSStackView {
                 self.tilerUtilizationChart = chart
             }
         }
+        
+        self.recalculateStatsHeight()
+    }
+    
+    private func recalculateStatsHeight() {
+        guard let statsView = self.statsView, let statsContainer = self.statsContainer else {
+            return
+        }
+        
+        let height = statsContainer.arrangedSubviews.map({ $0.bounds.height }).reduce(0, +)
+        statsView.setFrameSize(NSSize(width: self.frame.width, height: height))
+        statsContainer.setFrameSize(NSSize(width: self.frame.width, height: height))
+    }
+    
+    private func recalculateHeight() {
+        self.recalculateStatsHeight()
+        
+        let height = self.arrangedSubviews.map({ $0.bounds.height + self.spacing }).reduce(0, +)
+        self.setFrameSize(NSSize(width: self.frame.width, height: height))
+        self.sizeCallback()
     }
     
     public func update(_ gpu: GPU_Info) {
@@ -286,6 +306,7 @@ private class GPUView: NSStackView {
             self.addStats(id: "GPU utilization", gpu.utilization)
             self.addStats(id: "Render utilization", gpu.renderUtilization)
             self.addStats(id: "Tiler utilization", gpu.tilerUtilization)
+            self.recalculateHeight()
         }
         
         if let value = gpu.temperature {
@@ -313,11 +334,7 @@ private class GPUView: NSStackView {
             self.insertArrangedSubview(self.detailsView, at: 1)
         }
         
-        self.setFrameSize(NSSize(
-            width: self.frame.width,
-            height: self.arrangedSubviews.map({ $0.bounds.height + self.spacing }).reduce(0, +)
-        ))
-        self.sizeCallback()
+        self.recalculateHeight()
     }
 }
 
