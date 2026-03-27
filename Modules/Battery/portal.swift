@@ -29,7 +29,7 @@ internal class Portal: NSStackView, Portal_p {
     public init(_ module: ModuleType) {
         self.name = module.stringValue
         
-        super.init(frame: NSRect.zero)
+        super.init(frame: NSRect(x: 0, y: 0, width: Constants.Popup.width, height: Constants.Popup.portalHeight))
         
         self.wantsLayer = true
         self.layer?.backgroundColor = NSColor.windowBackgroundColor.cgColor
@@ -37,6 +37,7 @@ internal class Portal: NSStackView, Portal_p {
         
         self.orientation = .vertical
         self.distribution = .fillEqually
+        self.widthAnchor.constraint(equalToConstant: Constants.Popup.width).isActive = true
         self.spacing = Constants.Popup.spacing*2
         self.edgeInsets = NSEdgeInsets(
             top: Constants.Popup.spacing*2,
