@@ -869,9 +869,12 @@ public class SettingsContainerView: NSStackView {
 
 public class SMCHelper {
     public static let shared = SMCHelper()
+    private let helperToolPath = "/Library/PrivilegedHelperTools/com.textd.Stats.SMC.Helper"
+    private let launchdPlistPath = "/Library/LaunchDaemons/com.textd.Stats.SMC.Helper.plist"
     
     public var isInstalled: Bool {
-        syncShell("ls /Library/PrivilegedHelperTools/").contains("com.textd.Stats.SMC.Helper")
+        FileManager.default.fileExists(atPath: self.helperToolPath) &&
+        FileManager.default.fileExists(atPath: self.launchdPlistPath)
     }
     
     private var connection: NSXPCConnection? = nil
@@ -965,7 +968,23 @@ public class SMCHelper {
         }
         
         AuthorizationFree(authRef!, [])
-        completion(true)
+        DispatchQueue.global(qos: .userInitiated).async {
+            let installed = self.waitForInstallation()
+            DispatchQueue.main.async {
+                completion(installed)
+            }
+        }
+    }
+
+    private func waitForInstallation(timeout: TimeInterval = 5) -> Bool {
+        let deadline = Date().addingTimeInterval(timeout)
+        while Date() < deadline {
+            if self.isInstalled {
+                return true
+            }
+            usleep(100_000)
+        }
+        return self.isInstalled
     }
     
     private func helperConnection() -> NSXPCConnection? {
@@ -1114,66 +1133,47 @@ public class AppIcon: NSView {
         
         guard let ctx = NSGraphicsContext.current?.cgContext else { return }
         ctx.setShouldAntialias(true)
+        let scale = NSScreen.main?.backingScaleFactor ?? 2
+        let lineWidth = 1 / scale
         
-        NSColor.textColor.set()
-        NSBezierPath(roundedRect: NSRect(
-            x: 0,
-            y: 0,
-            width: AppIcon.size.width,
-            height: AppIcon.size.height
-        ), xRadius: 4, yRadius: 4).fill()
+        let outer = NSBezierPath(roundedRect: NSRect(x: 0.5, y: 0.5, width: 15, height: 15), xRadius: 4, yRadius: 4)
+        NSColor.textColor.setStroke()
+        outer.lineWidth = lineWidth
+        outer.stroke()
         
-        NSColor.controlTextColor.set()
-        NSBezierPath(roundedRect: NSRect(
-            x: 1.5,
-            y: 1.5,
-            width: AppIcon.size.width - 3,
-            height: AppIcon.size.height - 3
-        ), xRadius: 3, yRadius: 3).fill()
+        let monitor = NSBezierPath(roundedRect: NSRect(x: 2.2, y: 5.2, width: 9.4, height: 6), xRadius: 1.8, yRadius: 1.8)
+        monitor.lineWidth = lineWidth
+        monitor.stroke()
         
-        let lineWidth = 1 / (NSScreen.main?.backingScaleFactor ?? 1) / 2
-        let offset = lineWidth/2
-        let zero = (AppIcon.size.height - 3 + 1.5)/2 + lineWidth
-        let x = 1.5
+        let stand = NSBezierPath()
+        stand.move(to: NSPoint(x: 6.9, y: 5.0))
+        stand.line(to: NSPoint(x: 6.9, y: 3.5))
+        stand.move(to: NSPoint(x: 5.1, y: 2.8))
+        stand.line(to: NSPoint(x: 8.7, y: 2.8))
+        stand.lineWidth = lineWidth
+        stand.lineCapStyle = .round
+        stand.stroke()
         
-        let downloadLine = drawLine(points: [
-            (x+0, zero-offset),
-            (x+1, zero-offset),
-            (x+2, zero-offset-2.5),
-            (x+3, zero-offset-4),
-            (x+4, zero-offset),
-            (x+5, zero-offset-2),
-            (x+6, zero-offset),
-            (x+7, zero-offset),
-            (x+8, zero-offset-2),
-            (x+9, zero-offset),
-            (x+10, zero-offset-4),
-            (x+11, zero-offset-0.5),
-            (x+12, zero-offset)
-        ], color: NSColor.systemBlue, lineWidth: lineWidth)
+        let chart = NSBezierPath()
+        chart.move(to: NSPoint(x: 3.2, y: 7.0))
+        chart.line(to: NSPoint(x: 4.6, y: 7.5))
+        chart.line(to: NSPoint(x: 5.8, y: 6.3))
+        chart.line(to: NSPoint(x: 7.0, y: 8.7))
+        chart.line(to: NSPoint(x: 8.2, y: 7.7))
+        chart.line(to: NSPoint(x: 10.2, y: 9.2))
+        chart.lineWidth = 1.25
+        chart.lineJoinStyle = .round
+        chart.lineCapStyle = .round
+        chart.stroke()
         
-        let uploadLine = drawLine(points: [
-            (x+0, zero+offset),
-            (x+1, zero+offset),
-            (x+2, zero+offset+2),
-            (x+3, zero+offset),
-            (x+4, zero+offset),
-            (x+5, zero+offset),
-            (x+6, zero+offset+3),
-            (x+7, zero+offset+3),
-            (x+8, zero+offset),
-            (x+9, zero+offset+1),
-            (x+10, zero+offset+5),
-            (x+11, zero+offset),
-            (x+12, zero+offset)
-        ], color: NSColor.systemRed, lineWidth: lineWidth)
-        
-        ctx.saveGState()
-        drawUnderLine(dirtyRect, path: downloadLine, color: NSColor.systemBlue, x: x, y: zero-offset)
-        ctx.restoreGState()
-        ctx.saveGState()
-        drawUnderLine(dirtyRect, path: uploadLine, color: NSColor.systemRed, x: x, y: zero+offset)
-        ctx.restoreGState()
+        NSColor.textColor.withAlphaComponent(0.8).setFill()
+        [
+            NSRect(x: 12.4, y: 4.4, width: 1.3, height: 2.0),
+            NSRect(x: 12.4, y: 6.9, width: 1.3, height: 3.1),
+            NSRect(x: 12.4, y: 10.5, width: 1.3, height: 1.8)
+        ].forEach {
+            NSBezierPath(roundedRect: $0, xRadius: 0.65, yRadius: 0.65).fill()
+        }
     }
     
     private func drawLine(points: [(CGFloat, CGFloat)], color: NSColor, lineWidth: CGFloat) -> NSBezierPath {

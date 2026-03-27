@@ -86,6 +86,12 @@ extension AppDelegate {
     }
     
     internal func defaultValues() {
+        if !Store.shared.exist(key: "combinedModulesCompactModeInitialized") {
+            Store.shared.set(key: "CombinedModules", value: true)
+            Store.shared.set(key: "CombinedModules_popup", value: true)
+            Store.shared.set(key: "combinedModulesCompactModeInitialized", value: true)
+        }
+        
         if Store.shared.exist(key: "runAtLoginInitialized") {
             LaunchAtLogin.migrate()
         }

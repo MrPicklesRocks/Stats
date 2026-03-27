@@ -23,7 +23,7 @@ class ApplicationSettings: NSStackView {
     }
     
     private var combinedModulesState: Bool {
-        get { Store.shared.bool(key: "CombinedModules", defaultValue: false) }
+        get { Store.shared.bool(key: "CombinedModules", defaultValue: true) }
         set { Store.shared.set(key: "CombinedModules", value: newValue) }
     }
     private var combinedModulesSpacing: String {

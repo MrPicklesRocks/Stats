@@ -18,7 +18,7 @@ internal class CombinedView: NSObject, NSGestureRecognizerDelegate {
     private var popup: PopupWindow? = nil
     
     private var status: Bool {
-        Store.shared.bool(key: "CombinedModules", defaultValue: false)
+        Store.shared.bool(key: "CombinedModules", defaultValue: true)
     }
     private var spacing: CGFloat {
         CGFloat(Int(Store.shared.string(key: "CombinedModules_spacing", defaultValue: "")) ?? 0)
@@ -75,7 +75,7 @@ internal class CombinedView: NSObject, NSGestureRecognizerDelegate {
         })
         self.menuBarItem?.button?.addSubview(self.view)
         self.menuBarItem?.button?.image = NSImage()
-        self.menuBarItem?.button?.toolTip = localizedString("Combined modules")
+        self.menuBarItem?.button?.toolTip = localizedString("Stats")
         
         if !self.combinedModulesPopup {
             self.activeModules.forEach { (m: Module) in
@@ -98,9 +98,7 @@ internal class CombinedView: NSObject, NSGestureRecognizerDelegate {
             self.menuBarItem?.button?.sendAction(on: [.leftMouseDown, .rightMouseDown])
         }
         
-        DispatchQueue.main.async(execute: {
-            self.recalculate()
-        })
+        DispatchQueue.main.async(execute: { self.recalculate() })
     }
     
     public func disable() {
@@ -117,6 +115,14 @@ internal class CombinedView: NSObject, NSGestureRecognizerDelegate {
     
     private func recalculate() {
         self.view.subviews.forEach({ $0.removeFromSuperview() })
+        
+        if self.combinedModulesPopup {
+            let icon = AppIcon()
+            self.view.addSubview(icon)
+            self.view.setFrameSize(NSSize(width: AppIcon.size.width, height: self.view.frame.height))
+            self.menuBarItem?.length = AppIcon.size.width
+            return
+        }
         
         var w: CGFloat = 0
         var i: Int = 0
@@ -144,7 +150,7 @@ internal class CombinedView: NSObject, NSGestureRecognizerDelegate {
     
     @objc private func togglePopup(_ sender: NSButton) {
         guard let popup = self.popup, let item = self.menuBarItem, let window = item.button?.window else { return }
-        let openedWindows = NSApplication.shared.windows.filter{ $0 is NSPanel }
+        let openedWindows = NSApplication.shared.windows.filter{ $0 is PopupWindow }
         openedWindows.forEach{ $0.setIsVisible(false) }
         
         if popup.occlusionState.rawValue == 8192 {
@@ -262,7 +268,6 @@ private class Popup: NSStackView, Popup_p {
     
     fileprivate func settings() -> NSView? { return nil }
     fileprivate func appear() {}
-    fileprivate func disappear() {}
     fileprivate func setKeyboardShortcut(_ binding: [UInt16]) {
         self.keyboardShortcut = binding
         Store.shared.set(key: "CombinedModules_popup_keyboardShortcut", value: binding)
@@ -271,10 +276,14 @@ private class Popup: NSStackView, Popup_p {
     @objc private func reinit() {
         self.subviews.forEach({ $0.removeFromSuperview() })
         
-        let availableModules = modules.filter({ $0.enabled && $0.portal != nil })
+        let availableModules = modules
+            .filter({ $0.enabled && $0.portal != nil })
+            .sorted(by: { $0.combinedPosition < $1.combinedPosition })
         availableModules.forEach { (m: Module) in
             if let p = m.portal {
-                self.addArrangedSubview(p)
+                self.addArrangedSubview(ModulePortalRow(module: m, portal: p) { [weak self] module, row in
+                    self?.openDetails(module: module, row: row)
+                })
             }
         }
         
@@ -283,5 +292,70 @@ private class Popup: NSStackView, Popup_p {
             self.setFrameSize(NSSize(width: self.frame.width, height: h))
             self.sizeCallback?(self.frame.size)
         }
+    }
+    
+    fileprivate func disappear() {
+        NSApplication.shared.windows
+            .filter { $0 is PopupWindow && $0 != self.window }
+            .forEach { $0.setIsVisible(false) }
+    }
+    
+    private func openDetails(module: Module, row: ModulePortalRow) {
+        guard let window = row.window else { return }
+        let rect = row.convert(row.bounds, to: nil)
+        let screenRect = window.convertToScreen(rect)
+        
+        NotificationCenter.default.post(name: .togglePopup, object: nil, userInfo: [
+            "module": module.name,
+            "placement": "sidecar",
+            "anchorOrigin": screenRect.origin,
+            "anchorSize": screenRect.size,
+            "keepCombinedOpen": true
+        ])
+    }
+}
+
+private class ModulePortalRow: NSView {
+    private let module: Module
+    private let portal: Portal_p
+    private let hover: (Module, ModulePortalRow) -> Void
+    private var tracking: NSTrackingArea?
+    
+    init(module: Module, portal: Portal_p, hover: @escaping (Module, ModulePortalRow) -> Void) {
+        self.module = module
+        self.portal = portal
+        self.hover = hover
+        
+        super.init(frame: NSRect(x: 0, y: 0, width: portal.frame.width, height: portal.frame.height))
+        self.wantsLayer = true
+        
+        portal.setFrameOrigin(.zero)
+        self.addSubview(portal)
+        self.heightAnchor.constraint(equalToConstant: portal.frame.height).isActive = true
+        self.widthAnchor.constraint(equalToConstant: portal.frame.width).isActive = true
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
+    override func updateTrackingAreas() {
+        super.updateTrackingAreas()
+        if let tracking = self.tracking {
+            self.removeTrackingArea(tracking)
+        }
+        let tracking = NSTrackingArea(
+            rect: self.bounds,
+            options: [.mouseEnteredAndExited, .activeAlways, .inVisibleRect],
+            owner: self,
+            userInfo: nil
+        )
+        self.addTrackingArea(tracking)
+        self.tracking = tracking
+    }
+    
+    override func mouseEntered(with event: NSEvent) {
+        self.hover(self.module, self)
+        super.mouseEntered(with: event)
     }
 }

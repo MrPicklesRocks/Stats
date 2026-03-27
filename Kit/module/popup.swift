@@ -95,6 +95,9 @@ public class PopupWindow: NSWindow, NSWindowDelegate {
         if self.locked {
             return
         }
+        if self.childWindows?.contains(where: { $0.isVisible }) == true {
+            return
+        }
         
         self.viewController.setCloseButton(false)
         self.setIsVisible(false)

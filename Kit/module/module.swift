@@ -291,19 +291,84 @@ open class Module {
     @objc private func listenForPopupToggle(_ notification: Notification) {
         guard let popup = self.popup,
               let name = notification.userInfo?["module"] as? String,
-              let buttonOrigin = notification.userInfo?["origin"] as? CGPoint,
-              let buttonCenter = notification.userInfo?["center"] as? CGFloat,
               self.config.name == name else {
             return
         }
+        let placement = notification.userInfo?["placement"] as? String ?? "below"
+        let keepCombinedOpen = notification.userInfo?["keepCombinedOpen"] as? Bool ?? false
         
-        let openedWindows = NSApplication.shared.windows.filter{ $0 is NSPanel }
+        let openedWindows = NSApplication.shared.windows.filter {
+            guard $0 is PopupWindow else { return false }
+            if keepCombinedOpen && $0.title == "Combined modules" {
+                return false
+            }
+            return true
+        }
         openedWindows.forEach{ $0.setIsVisible(false) }
         
         var reopen: Bool = false
         if let widget = notification.userInfo?["widget"] as? widget_t {
             reopen = popup.openedBy != nil && popup.openedBy != widget
             popup.openedBy = widget
+        }
+        
+        if placement == "sidecar" {
+            guard let anchorOrigin = notification.userInfo?["anchorOrigin"] as? CGPoint,
+                  let anchorSize = notification.userInfo?["anchorSize"] as? CGSize else {
+                return
+            }
+            
+            NSApplication.shared.activate(ignoringOtherApps: true)
+            popup.contentView?.invalidateIntrinsicContentSize()
+            
+            let popupSize = popup.contentView?.intrinsicContentSize ?? .zero
+            let anchorRect = CGRect(origin: anchorOrigin, size: anchorSize)
+            let visibleFrame = NSScreen.screens.first(where: { $0.frame.intersects(anchorRect) })?.visibleFrame ??
+                NSScreen.main?.visibleFrame ??
+                NSRect(origin: .zero, size: popupSize)
+            
+            let rightX = anchorRect.maxX + 6
+            let leftX = anchorRect.minX - popupSize.width - 6
+            let x: CGFloat
+            if rightX + popupSize.width <= visibleFrame.maxX {
+                x = rightX
+            } else if leftX >= visibleFrame.minX {
+                x = leftX
+            } else {
+                x = max(visibleFrame.minX + 3, min(rightX, visibleFrame.maxX - popupSize.width - 3))
+            }
+            
+            var y = max(visibleFrame.minY + 3, min(anchorRect.midY - popupSize.height/2, visibleFrame.maxY - popupSize.height - 3))
+            
+            if let parent = popup.parent {
+                parent.removeChildWindow(popup)
+            }
+            if keepCombinedOpen,
+               let combinedPopup = NSApplication.shared.windows.first(where: { $0.title == "Combined modules" && $0.isVisible }) {
+                let alignedTopY = combinedPopup.frame.maxY - popupSize.height
+                y = max(visibleFrame.minY + 3, min(alignedTopY, visibleFrame.maxY - popupSize.height - 3))
+                combinedPopup.childWindows?
+                    .compactMap { $0 as? PopupWindow }
+                    .filter { $0 != popup }
+                    .forEach {
+                        combinedPopup.removeChildWindow($0)
+                        $0.orderOut(nil)
+                    }
+                combinedPopup.addChildWindow(popup, ordered: .above)
+            }
+
+            popup.setFrameOrigin(NSPoint(x: x, y: y))
+            popup.setIsVisible(true)
+            return
+        }
+        
+        if let parent = popup.parent {
+            parent.removeChildWindow(popup)
+        }
+        
+        guard let buttonOrigin = notification.userInfo?["origin"] as? CGPoint,
+              let buttonCenter = notification.userInfo?["center"] as? CGFloat else {
+            return
         }
         
         if popup.occlusionState.rawValue == 8192 || reopen {
