@@ -285,8 +285,9 @@ public class Disk: Module {
             self.popupView.capacityCallback(value)
         })
         self.settingsView.setList(value)
-        Diagnostics.shared.recordDiskSnapshots(
-            self.capacityReader?.diagnosticsSnapshots() ?? value.map { disk in
+        let diagnosticsCapacitySnapshots = value.array
+            .filter { !$0.removable }
+            .map { disk in
                 DiagnosticsDiskSnapshot(
                     identifier: disk.uuid,
                     name: disk.mediaName,
@@ -300,7 +301,7 @@ public class Disk: Module {
                     smartPowerOnHours: disk.smart?.powerOnHours
                 )
             }
-        )
+        Diagnostics.shared.recordDiskSnapshots(diagnosticsCapacitySnapshots)
         
         guard let d = value.first(where: { $0.mediaName == self.selectedDisk }) ?? value.first(where: { $0.root }) else {
             return
@@ -369,8 +370,9 @@ public class Disk: Module {
         DispatchQueue.main.async(execute: {
             self.popupView.activityCallback(value)
         })
-        Diagnostics.shared.recordDiskSnapshots(
-            value.map { disk in
+        let diagnosticsActivitySnapshots = value.array
+            .filter { !$0.removable }
+            .map { disk in
                 DiagnosticsDiskSnapshot(
                     identifier: disk.uuid,
                     name: disk.mediaName,
@@ -378,7 +380,7 @@ public class Disk: Module {
                     writeBytesPerSecond: disk.activity.write
                 )
             }
-        )
+        Diagnostics.shared.recordDiskSnapshots(diagnosticsActivitySnapshots)
         
         guard let d = value.first(where: { $0.mediaName == self.selectedDisk }) ?? value.first(where: { $0.root }) else {
             return

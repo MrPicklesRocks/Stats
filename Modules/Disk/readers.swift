@@ -97,46 +97,6 @@ internal class CapacityReader: Reader<Disks> {
         self.callback(self.list)
     }
 
-    internal func diagnosticsSnapshots() -> [DiagnosticsDiskSnapshot] {
-        let keys: [URLResourceKey] = [.volumeNameKey]
-        let paths = FileManager.default.mountedVolumeURLs(includingResourceValuesForKeys: keys, options: [.skipHiddenVolumes]) ?? []
-
-        guard let session = DASessionCreate(kCFAllocatorDefault) else {
-            error("cannot create diagnostics DASessionCreate()", log: self.log)
-            return []
-        }
-
-        var snapshots: [DiagnosticsDiskSnapshot] = []
-        for url in paths {
-            if url.pathComponents.count == 1 || (url.pathComponents.count > 1 && url.pathComponents[1] == "Volumes") {
-                guard let disk = DADiskCreateFromVolumePath(kCFAllocatorDefault, session, url as CFURL) else { continue }
-                guard var details = driveDetails(disk, removableState: true) else { continue }
-
-                if let path = details.path {
-                    details.free = self.freeDiskSpaceInBytes(path)
-                    details.size = self.totalDiskSpaceInBytes(path)
-                }
-                details.smart = self.getSMARTDetails(for: details.BSDName)
-                guard details.size != 0 else { continue }
-
-                snapshots.append(DiagnosticsDiskSnapshot(
-                    identifier: details.uuid,
-                    name: details.mediaName,
-                    mounted: true,
-                    totalBytes: details.size,
-                    freeBytes: details.free,
-                    utilization: details.percentage,
-                    smartTemperature: details.smart?.temperature,
-                    smartLife: details.smart?.life,
-                    smartPowerCycles: details.smart?.powerCycles,
-                    smartPowerOnHours: details.smart?.powerOnHours
-                ))
-            }
-        }
-
-        return snapshots
-    }
-    
     public func resetPurgableSpace(for uuid: String) {
         if let disk = self.list.first(where: { $0.uuid == uuid }), let path = disk.path {
             self.purgableSpace.removeValue(forKey: path)
